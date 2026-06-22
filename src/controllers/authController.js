@@ -16,6 +16,13 @@ async function login(req, res) {
     });
   }
 
+  // Cambio: evita que la ruta falle si Supabase no está configurado aún.
+  if (!supabase) {
+    return res.status(503).json({
+      message: 'Supabase no está configurado en este entorno',
+    });
+  }
+
   try {
     const { data, error } = await supabase
       .from(authTable)
