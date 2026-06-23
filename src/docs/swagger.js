@@ -32,17 +32,46 @@ const swaggerSpec = {
         },
       },
     },
-    '/datos-capturados/export/csv': {
+    '/datos/ultimo': {
       get: {
-        summary: 'Exportar todos los datos capturados a CSV',
+        summary: 'Obtener el ultimo dato capturado',
         tags: ['Datos capturados'],
         responses: {
           200: {
-            description: 'Archivo CSV generado correctamente',
+            description: 'Ultimo registro obtenido correctamente',
             content: {
-              'text/csv': {
+              'application/json': {
                 schema: {
-                  type: 'string',
+                  type: 'object',
+                  additionalProperties: true,
+                },
+              },
+            },
+          },
+          404: {
+            description: 'No hay datos capturados',
+          },
+          503: {
+            description: 'Supabase no está configurado',
+          },
+        },
+      },
+    },
+    '/datos/historial': {
+      get: {
+        summary: 'Obtener los ultimos 50 registros capturados',
+        tags: ['Datos capturados'],
+        responses: {
+          200: {
+            description: 'Historial obtenido correctamente',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    additionalProperties: true,
+                  },
                 },
               },
             },
@@ -51,7 +80,7 @@ const swaggerSpec = {
             description: 'Supabase no está configurado',
           },
           500: {
-            description: 'Error al generar el CSV',
+            description: 'Error al obtener el historial',
           },
         },
       },

@@ -7,6 +7,6 @@ const router = express.Router();
 
 router.get('/health', health);
 router.use('/auth', authRoutes);
-router.use('/datos-capturados', datosRoutes);
+router.use('/datos', datosRoutes);
 
 module.exports = router;

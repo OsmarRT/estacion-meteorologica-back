@@ -1,8 +1,9 @@
 const express = require('express');
-const { exportDatosCapturadosCsv } = require('../controllers/datosController');
+const { obtenerUltimoDato, obtenerHistorialDatos } = require('../controllers/datosController');
 
 const router = express.Router();
 
-router.get('/export/csv', exportDatosCapturadosCsv);
+router.get('/ultimo', obtenerUltimoDato);
+router.get('/historial', obtenerHistorialDatos);
 
 module.exports = router;
