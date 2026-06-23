@@ -1,4 +1,5 @@
 const mqtt = require('mqtt');
+const supabase = require('./config/supabase');
 
 // Cambio: el broker ahora se configura con las variables del .env que pediste.
 require('dotenv').config();
@@ -11,6 +12,41 @@ const options = {
   connectTimeout: 4000,
   reconnectPeriod: 1000,
 };
+
+// Función para guardar datos en Supabase
+async function guardarTelemetria(data) {
+  if (!supabase) {
+    console.error('[MQTT] ❌ Supabase no está configurado');
+    return;
+  }
+
+  try {
+    const tableName = process.env.TELEMETRIA_TABLE || 'datos_capturados';
+    const { error } = await supabase
+      .from(tableName)
+      .insert([
+        {
+          temp: data.temp,
+          humedad: data.humedad,
+          presion: data.presion,
+          viento: data.viento,
+          luz: data.luz,
+        },
+      ]);
+
+    if (error) {
+      console.error('[MQTT] ❌ Error al guardar en Supabase:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
+    } else {
+      console.log('[MQTT] ✅ Datos guardados en Supabase correctamente');
+    }
+  } catch (error) {
+    console.error('[MQTT] ❌ Excepción al guardar en Supabase:', error.message);
+  }
+}
 
 function isExampleValue(value) {
   return !value || value.includes('tu-cluster-id.hivemq.cloud') || value.includes('tu_usuario_de_hivemq') || value.includes('tu_contraseña_de_hivemq');
@@ -50,7 +86,9 @@ function initMqtt() {
     try {
       const data = JSON.parse(message.toString());
       console.log(`\n[MQTT] 📥 Nuevo mensaje en [${topic}]:`, data);
-      // En el futuro aquí puedes guardar data en Supabase.
+      
+      // Guardar los datos en Supabase
+      guardarTelemetria(data);
     } catch (error) {
       console.error('[MQTT] Mensaje recibido no es un JSON válido:', message.toString());
     }

@@ -1,5 +1,6 @@
 const mqtt = require('mqtt');
 require('dotenv').config();
+const supabase = require('../config/supabase');
 
 const brokerUrl = process.env.MQTT_BROKER_URL;
 const options = {
@@ -8,6 +9,37 @@ const options = {
     connectTimeout: 4000,
     reconnectPeriod: 1000,
 };
+
+// Función para guardar datos en Supabase
+async function guardarTelemetria(data) {
+    if (!supabase) {
+        console.error('[MQTT] Supabase no está configurado');
+        return;
+    }
+
+    try {
+        const tableName = process.env.TELEMETRIA_TABLE || 'datos_capturados';
+        const { error } = await supabase
+            .from(tableName)
+            .insert([
+                {
+                    temp: data.temp,
+                    humedad: data.humedad,
+                    presion: data.presion,
+                    viento: data.viento,
+                    luz: data.luz,
+                },
+            ]);
+
+        if (error) {
+            console.error('[MQTT] Error al guardar en Supabase:', error.message);
+        } else {
+            console.log('[MQTT] ✅ Datos guardados en Supabase correctamente');
+        }
+    } catch (error) {
+        console.error('[MQTT] Excepción al guardar en Supabase:', error.message);
+    }
+}
 
 // Esta función inicializa la conexión
 const initMqtt = () => {
@@ -36,8 +68,8 @@ const initMqtt = () => {
             const data = JSON.parse(message.toString());
             console.log(`[MQTT] Mensaje recibido en [${topic}]:`, data);
 
-            // TODO: Aquí puedes procesar los datos o guardarlos en Supabase
-            // ejemplo: guardarEnBaseDeDatos(data);
+            // Guardar los datos en Supabase
+            guardarTelemetria(data);
 
         } catch (error) {
             console.error('[MQTT] Error al parsear el mensaje (¿No es un JSON válido?):', message.toString());
