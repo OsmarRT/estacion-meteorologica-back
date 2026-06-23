@@ -1,5 +1,6 @@
 const supabase = require('../config/supabase');
-const { authTable } = require('../config');
+const jwt = require('jsonwebtoken');
+const { authTable, jwtSecret, jwtExpiresIn } = require('../config');
 
 const tableNamePattern = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
 
@@ -20,6 +21,12 @@ async function login(req, res) {
   if (!supabase) {
     return res.status(503).json({
       message: 'Supabase no está configurado en este entorno',
+    });
+  }
+
+  if (!jwtSecret) {
+    return res.status(503).json({
+      message: 'JWT no está configurado en este entorno',
     });
   }
 
@@ -54,9 +61,23 @@ async function login(req, res) {
       });
     }
 
+    const token = jwt.sign(
+      {
+        id: data.id,
+        correo: data.correo,
+      },
+      jwtSecret,
+      {
+        subject: String(data.id),
+        expiresIn: jwtExpiresIn,
+      }
+    );
+
     return res.json({
       message: 'Inicio de sesion correcto',
       user: data,
+      token,
+      tokenType: 'Bearer',
     });
   } catch (error) {
     console.error('Error al iniciar sesion:', {
@@ -70,6 +91,14 @@ async function login(req, res) {
   }
 }
 
+async function me(req, res) {
+  return res.json({
+    message: 'Usuario autenticado',
+    user: req.user,
+  });
+}
+
 module.exports = {
   login,
+  me,
 };

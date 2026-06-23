@@ -3,7 +3,16 @@ const swaggerSpec = {
   info: {
     title: 'Estacion Meteorologica API',
     version: '1.0.0',
-    description: 'Documentacion de la API con autenticacion basica y health check.',
+    description: 'Documentacion de la API con autenticacion JWT, health check y subida OTA.',
+  },
+  components: {
+    securitySchemes: {
+      bearerAuth: {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+      },
+    },
   },
   servers: [
     {
@@ -119,6 +128,8 @@ const swaggerSpec = {
                   type: 'object',
                   properties: {
                     message: { type: 'string' },
+                    token: { type: 'string' },
+                    tokenType: { type: 'string', example: 'Bearer' },
                     user: {
                       type: 'object',
                       properties: {
@@ -140,6 +151,74 @@ const swaggerSpec = {
           },
           500: {
             description: 'Error interno del servidor',
+          },
+        },
+      },
+    },
+    '/auth/me': {
+      get: {
+        summary: 'Leer usuario autenticado',
+        tags: ['Autenticacion'],
+        security: [{ bearerAuth: [] }],
+        responses: {
+          200: {
+            description: 'Usuario autenticado leido correctamente',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    message: { type: 'string' },
+                    user: {
+                      type: 'object',
+                      additionalProperties: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          401: {
+            description: 'Token invalido o faltante',
+          },
+        },
+      },
+    },
+    '/ota/upload': {
+      post: {
+        summary: 'Subir archivo BIN a Supabase Storage y registrar OTA',
+        tags: ['OTA'],
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'multipart/form-data': {
+              schema: {
+                type: 'object',
+                required: ['file'],
+                properties: {
+                  file: {
+                    type: 'string',
+                    format: 'binary',
+                    description: 'Archivo .BIN a subir',
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: 'Archivo subido y registrado correctamente',
+          },
+          400: {
+            description: 'Archivo invalido o faltante',
+          },
+          401: {
+            description: 'Token invalido o faltante',
+          },
+          503: {
+            description: 'Supabase no está configurado',
           },
         },
       },

@@ -7,4 +7,6 @@ module.exports = {
   supabaseUrl: process.env.SUPABASE_URL || '',
   supabaseSecretKey: process.env.SUPABASE_SECRET_KEY || '',
   authTable: process.env.AUTH_TABLE || 'usuarrio',
+  jwtSecret: process.env.JWT_SECRET || process.env.SUPABASE_SECRET_KEY || '',
+  jwtExpiresIn: process.env.JWT_EXPIRES_IN || '8h',
 };
