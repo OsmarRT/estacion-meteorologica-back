@@ -1,12 +1,11 @@
 const { createClient } = require('@supabase/supabase-js');
 const { supabaseUrl, supabaseSecretKey } = require('./index');
 
-if (!supabaseUrl) {
-  throw new Error('SUPABASE_URL is required');
-}
-
-if (!supabaseSecretKey) {
-  throw new Error('SUPABASE_SECRET_KEY is required');
+// Cambio: si Supabase no está configurado, la API sigue levantando y las rutas
+// que dependan de Supabase responderán con un estado controlado.
+if (!supabaseUrl || !supabaseSecretKey) {
+  module.exports = null;
+  return;
 }
 
 const supabase = createClient(supabaseUrl, supabaseSecretKey, {
