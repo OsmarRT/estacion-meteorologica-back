@@ -94,6 +94,30 @@ const swaggerSpec = {
         },
       },
     },
+    '/datos/export/csv': {
+      get: {
+        summary: 'Exportar todos los datos capturados a CSV',
+        tags: ['Datos capturados'],
+        responses: {
+          200: {
+            description: 'Archivo CSV generado correctamente',
+            content: {
+              'text/csv': {
+                schema: {
+                  type: 'string',
+                },
+              },
+            },
+          },
+          503: {
+            description: 'Supabase no está configurado',
+          },
+          500: {
+            description: 'Error al generar el CSV',
+          },
+        },
+      },
+    },
     '/auth/login': {
       post: {
         summary: 'Iniciar sesion',
